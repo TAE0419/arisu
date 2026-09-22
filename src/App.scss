@@ -1,0 +1,194 @@
+@use './styles/variable' as *;
+
+@font-face {
+  font-family: 'HS Jandari';
+  src: url('./assets/font/HSJandari-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+:root {
+  font-family: 'HS Jandari', sans-serif;
+  color: $black;
+  background: $light-blue;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+body::after {
+  position: fixed;
+  z-index: 2147483647;
+  content: '';
+  inset: 0;
+  background: url('./assets/background/texture.png') center / cover no-repeat;
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+.app-background {
+  display: none;
+}
+
+.start-page {
+  display: grid;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  place-items: center;
+  background: $light-blue url('./assets/background/start.png') center / cover no-repeat;
+
+  &__content {
+    --start-content-y: 1.3rem;
+
+    display: flex;
+    width: min(70rem, 88vw);
+    transform: translateY(var(--start-content-y));
+    flex-direction: column;
+    align-items: center;
+
+    &--leaving {
+      pointer-events: none;
+      animation: start-content-exit 600ms cubic-bezier(0.55, 0, 0.7, 0.4) forwards;
+    }
+
+    &--entering {
+      animation: start-content-enter 650ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+    }
+  }
+
+  &__title {
+    display: flex;
+    margin: 0;
+    color: $orange;
+    font-size: $font-size-hero;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: center;
+    text-shadow: $text-shadow;
+    flex-direction: column;
+  }
+
+  &__actions {
+    display: flex;
+    width: min(58rem, 80vw);
+    margin-top: clamp(3rem, 8vh, 7rem);
+    justify-content: space-between;
+    gap: 3rem;
+
+    a {
+      display: grid;
+      width: 18.5rem;
+      min-height: 3.8rem;
+      padding: 0.35rem 1.5rem 0.45rem;
+      border-radius: $radius-pill;
+      place-items: center;
+      color: $blue;
+      background: $orange;
+      box-shadow: $element-shadow;
+      font-size: $font-size-button;
+      line-height: 1;
+      text-decoration: none;
+      transition: transform $transition-fast, box-shadow $transition-fast;
+
+      &:hover {
+        transform: translateY(-0.18rem);
+        box-shadow: $element-shadow-hover;
+      }
+
+      &:focus-visible {
+        outline: 0.25rem solid $yellow;
+        outline-offset: 0.3rem;
+      }
+
+      &:active {
+        transform: translateY(0.1rem);
+      }
+    }
+  }
+}
+
+@keyframes start-content-exit {
+  from {
+    transform: translateY(var(--start-content-y)) translateX(0);
+  }
+
+  to {
+    transform: translateY(var(--start-content-y)) translateX(-110vw);
+  }
+}
+
+@keyframes start-content-enter {
+  from {
+    transform: translateY(var(--start-content-y)) translateX(110vw);
+  }
+
+  to {
+    transform: translateY(var(--start-content-y)) translateX(0);
+  }
+}
+
+@media (max-width: 800px) {
+  .app-background {
+    position: fixed;
+    z-index: 0;
+    display: block;
+    width: 100vw;
+    height: 100svh;
+    inset: 0;
+    background: $light-blue url('./assets/background/start.png') center / cover no-repeat;
+    pointer-events: none;
+  }
+
+  .start-page {
+    position: relative;
+    z-index: 1;
+    min-height: 100svh;
+    background: transparent;
+
+    &__content {
+      --start-content-y: 0rem;
+    }
+
+    &__title {
+      font-size: $font-size-hero-mobile;
+      line-height: 1.3;
+    }
+
+    &__actions {
+      width: min(19rem, 78vw);
+      margin-top: 3.5rem;
+      flex-direction: column;
+      gap: 1.25rem;
+
+      a {
+        width: 100%;
+        font-size: $font-size-button-mobile;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-page__content--leaving,
+  .start-page__content--entering {
+    animation: none;
+  }
+}

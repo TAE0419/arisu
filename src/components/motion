@@ -1,0 +1,168 @@
+import React, { useEffect, useRef } from 'react';
+
+/**
+ * Water ripple effect React component.
+ * Converted from the classic canvas wave algorithm by Neil Wallis & Sergey Chikuyonok.
+ */
+export default function App() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = 960;
+    const height = 400;
+    const half_width = width >> 1;
+    const half_height = height >> 1;
+    const size = width * (height + 2) * 2;
+    const delay = 30;
+    let oldind = width;
+    let newind = width * (height + 3);
+    const riprad = 3;
+    const ripplemap = new Int32Array(size);
+    const last_map = new Int32Array(size);
+    const line_width = 20;
+    const step = line_width * 2;
+    const count = height / line_width;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.fillStyle = '#a2ddf8';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#07b';
+    ctx.save();
+    ctx.rotate(-0.785);
+    for (let i = 0; i < count; i++) {
+      ctx.fillRect(-width, i * step, width * 3, line_width);
+    }
+    ctx.restore();
+
+    const texture = ctx.getImageData(0, 0, width, height);
+    const ripple = ctx.getImageData(0, 0, width, height);
+
+    function disturb(dx, dy) {
+      dx = dx | 0;
+      dy = dy | 0;
+
+      for (let j = dy - riprad; j < dy + riprad; j++) {
+        for (let k = dx - riprad; k < dx + riprad; k++) {
+          if (j >= 0 && j < height && k >= 0 && k < width) {
+            ripplemap[oldind + (j * width) + k] += 128;
+          }
+        }
+      }
+    }
+
+    function newframe() {
+      let a, b, data, cur_pixel, new_pixel, old_data;
+
+      const t = oldind;
+      oldind = newind;
+      newind = t;
+      let i = 0;
+
+      const _width = width;
+      const _height = height;
+      const _ripplemap = ripplemap;
+      const _last_map = last_map;
+      const _rd = ripple.data;
+      const _td = texture.data;
+      const _half_width = half_width;
+      const _half_height = half_height;
+
+      for (let y = 0; y < _height; y++) {
+        for (let x = 0; x < _width; x++) {
+          const _newind = newind + i;
+          const _mapind = oldind + i;
+
+          data =
+            (_ripplemap[_mapind - _width] +
+              _ripplemap[_mapind + _width] +
+              _ripplemap[_mapind - 1] +
+              _ripplemap[_mapind + 1]) >> 1;
+
+          data -= _ripplemap[_newind];
+          data -= data >> 5;
+
+          _ripplemap[_newind] = data;
+
+          // where data=0 then still, where data>0 then wave
+          data = 1024 - data;
+
+          old_data = _last_map[i];
+          _last_map[i] = data;
+
+          if (old_data !== data) {
+            // offsets
+            a = (((x - _half_width) * data / 1024) | 0) + _half_width;
+            b = (((y - _half_height) * data / 1024) | 0) + _half_height;
+
+            // bounds check
+            if (a >= _width) a = _width - 1;
+            if (a < 0) a = 0;
+            if (b >= _height) b = _height - 1;
+            if (b < 0) b = 0;
+
+            new_pixel = (a + (b * _width)) * 4;
+            cur_pixel = i * 4;
+
+            _rd[cur_pixel] = _td[new_pixel];
+            _rd[cur_pixel + 1] = _td[new_pixel + 1];
+            _rd[cur_pixel + 2] = _td[new_pixel + 2];
+          }
+
+          ++i;
+        }
+      }
+    }
+
+    function run() {
+      newframe();
+      ctx.putImageData(ripple, 0, 0);
+    }
+
+    const handleMouseMove = (evt) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (evt.clientX - rect.left) * scaleX;
+      const y = (evt.clientY - rect.top) * scaleY;
+      disturb(x, y);
+    };
+
+    canvas.addEventListener('mousemove', handleMouseMove);
+
+    const runInterval = setInterval(run, delay);
+
+    const rnd = Math.random;
+    const dropInterval = setInterval(() => {
+      disturb(rnd() * width, rnd() * height);
+    }, 700);
+
+    return () => {
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      clearInterval(runInterval);
+      clearInterval(dropInterval);
+    };
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', margin: 0, backgroundColor: '#000' }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          maxWidth: '100%',
+          height: 'auto',
+          display: 'block',
+          cursor: 'pointer'
+        }}
+      />
+    </div>
+  );
+}

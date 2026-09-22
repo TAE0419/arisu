@@ -1,0 +1,617 @@
+@use '../styles/variable' as *;
+
+.story {
+  --story-face-size: min(5.85vw, 10.4vh, 7rem);
+  --story-sun-size: calc(var(--story-face-size) / 0.107);
+
+  position: fixed;
+  z-index: 5;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  inset: 0;
+  overflow: hidden;
+  background: $light-blue;
+  pointer-events: none;
+  user-select: none;
+
+  &__viewport {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__world {
+    width: 100%;
+    height: 300%;
+    background: url('../assets/background/story.png') center / cover no-repeat;
+  }
+
+  &__scene {
+    position: relative;
+    width: 100%;
+    height: calc(100% / 3);
+    overflow: hidden;
+  }
+
+  &__sun {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--story-sun-size);
+    aspect-ratio: 1045 / 991;
+    transform: translate(-50%, -50%);
+  }
+
+  &__sun-body {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform-origin: center;
+
+    &--spinning {
+      animation:
+        story-sun-spin-start 600ms cubic-bezier(0.4, 0, 1, 1) forwards,
+        story-sun-spin-loop 3.2s linear 600ms infinite;
+    }
+  }
+
+  &__sun-face {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    width: var(--story-face-size);
+    height: auto;
+    opacity: 0;
+    image-rendering: auto;
+    transform: translate3d(-50%, -50%, 0);
+    backface-visibility: hidden;
+
+    &--visible {
+      opacity: 1;
+    }
+  }
+
+  &__hatch {
+    position: absolute;
+    top: 50%;
+    left: 14%;
+    width: min(36vw, 65vh, 44rem);
+    translate: 0 -50%;
+    transform: translate3d(-75vw, 0, 0);
+    will-change: transform;
+
+    &--visible {
+      animation: story-hatch-enter 1600ms cubic-bezier(0.2, 0.65, 0.3, 1) forwards;
+
+      .story__hatch-bob {
+        animation: story-hatch-bob 1400ms linear infinite;
+      }
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  &__hatch-bob {
+    width: 100%;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  &__hatch-image--spin {
+    animation: story-hatch-spin 700ms ease-in-out;
+  }
+
+  &__mr-leak {
+    position: absolute;
+    right: 18%;
+    bottom: 0;
+    display: block;
+    width: min(46vw, 88vh, 55rem);
+    max-height: 96%;
+    object-fit: contain;
+    object-position: bottom right;
+  }
+
+  &__orange-cover {
+    position: fixed;
+    z-index: 20;
+    background: $orange;
+    clip-path: circle(150vmax at 50% 50%);
+    inset: 0;
+
+    &--shrinking {
+      animation: story-cover-shrink 1400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+  }
+
+  &__intro-face {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 21;
+    width: var(--story-face-size);
+    height: auto;
+    image-rendering: auto;
+    transform: translate3d(-50%, -50%, 0);
+    backface-visibility: hidden;
+  }
+
+  &__rain {
+    position: fixed;
+    z-index: 15;
+    overflow: hidden;
+    inset: 0;
+
+    img {
+      position: absolute;
+      top: -18vh;
+      left: var(--drop-left);
+      width: clamp(2.2rem, 4.2vw, 5.2rem);
+      height: auto;
+      animation: story-rain-fall 1.9s linear var(--drop-delay) infinite;
+    }
+  }
+
+  &__skip {
+    position: fixed;
+    z-index: 40;
+    right: clamp(1.25rem, 3vw, 3.5rem);
+    bottom: clamp(1.25rem, 3vh, 2.5rem);
+    padding: 0;
+    border: 0;
+    color: $black;
+    background: transparent;
+    cursor: pointer;
+    font-family: 'HS Jandari', sans-serif;
+    font-size: clamp(1rem, 1.5vw, 1.5rem);
+    font-weight: 700;
+    pointer-events: auto;
+
+    &:focus-visible {
+      outline: 0.2rem solid $orange;
+      outline-offset: 0.35rem;
+    }
+  }
+}
+
+.story-guide {
+  position: fixed;
+  z-index: 30;
+  top: 7.5vh;
+  right: 0;
+  width: 100%;
+  min-height: 84vh;
+  padding: clamp(2.2rem, 6vh, 4.5rem) clamp(2rem, 5.7vw, 7rem);
+  color: $white;
+  background: rgba($black, 0.8);
+  box-shadow: $element-shadow;
+  pointer-events: auto;
+  animation: story-guide-enter 650ms cubic-bezier(0.2, 0.8, 0.25, 1) both;
+
+  > h1 {
+    margin: 0 0 clamp(2.4rem, 6vh, 4.5rem);
+    color: $orange;
+    font-size: $font-size-page-title;
+    font-weight: 400;
+    line-height: 1;
+    text-align: center;
+  }
+
+  &__content {
+    display: flex;
+    max-width: 100rem;
+    flex-direction: column;
+    gap: clamp(1.5rem, 5vh, 3.5rem);
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    align-items: start;
+    gap: 1rem;
+
+    h2 {
+      position: relative;
+      margin: 0;
+      padding-left: 1.9rem;
+      color: $orange;
+      font-size: $font-size-section-title;
+      font-weight: 400;
+      white-space: nowrap;
+
+      &::before {
+        position: absolute;
+        top: 0.42rem;
+        left: 0;
+        width: 0.95rem;
+        height: 0.95rem;
+        border-radius: 50%;
+        background: $orange;
+        content: '';
+      }
+    }
+
+    p {
+      margin: 0;
+      font-family: Arial, 'Noto Sans KR', sans-serif;
+      font-size: $font-size-body;
+      line-height: 1.45;
+    }
+  }
+
+  &__legend {
+    display: flex;
+    margin-top: 2.5rem;
+    gap: 4rem;
+
+    figure {
+      display: grid;
+      min-width: 5rem;
+      margin: 0;
+      place-items: center;
+      gap: 0.7rem;
+    }
+
+    img {
+      width: 4.5rem;
+      height: 4.5rem;
+      object-fit: contain;
+    }
+
+    figcaption {
+      font-family: Arial, 'Noto Sans KR', sans-serif;
+      font-size: 1rem;
+    }
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: clamp(2rem, 5vw, 5rem);
+
+    figure {
+      display: flex;
+      min-width: 0;
+      margin: 0;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    figcaption {
+      font-family: Arial, 'Noto Sans KR', sans-serif;
+      font-size: $font-size-body;
+      // font-weight: 700;
+    }
+  }
+
+  &__control-icon {
+    display: grid;
+    width: 3.4rem;
+    height: 3.4rem;
+    flex: 0 0 3.4rem;
+    place-items: center;
+  }
+
+  &__control-device {
+    display: grid;
+    width: 4.5rem;
+    flex: 0 0 auto;
+    grid-template-rows: 3.4rem 1.25rem;
+    place-items: center;
+    gap: 0.45rem;
+
+    figcaption {
+      display: grid;
+      width: 100%;
+      height: 1.25rem;
+      place-items: center;
+      line-height: 1;
+      text-align: center;
+    }
+  }
+
+  &__control-description {
+    font-family: Arial, 'Noto Sans KR', sans-serif;
+    font-size: $font-size-body;
+    white-space: nowrap;
+  }
+
+  &__mouse-control {
+    position: relative;
+    display: block;
+    width: 2rem;
+    height: 2.75rem;
+    border: 0.14rem solid $white;
+    border-radius: 1.25rem;
+
+    &::before {
+      position: absolute;
+      top: -0.14rem;
+      left: 50%;
+      width: 0.14rem;
+      height: 1.15rem;
+      background: $white;
+      content: '';
+      transform: translateX(-50%);
+    }
+
+    &::after {
+      position: absolute;
+      top: 0.38rem;
+      left: 50%;
+      width: 0.28rem;
+      height: 0.68rem;
+      border-radius: 1rem;
+      background: $orange;
+      content: '';
+      transform: translateX(-50%);
+    }
+  }
+
+  &__touch-control {
+    display: grid;
+    width: 2.45rem;
+    height: 3.35rem;
+    place-items: center;
+    color: $white;
+    font-family: Arial, sans-serif;
+    font-size: 2.8rem;
+    line-height: 1;
+    text-align: center;
+    transform: translateX(-0.12rem);
+  }
+
+  &__actions {
+    position: absolute;
+    right: clamp(2rem, 5.5vw, 6.5rem);
+    bottom: clamp(2rem, 7vh, 5rem);
+    display: flex;
+    width: 18.5rem;
+    flex-direction: column;
+    gap: 1.45rem;
+
+    button {
+      min-height: 3.8rem;
+      padding: 0.35rem 1.5rem 0.45rem;
+      border: 0;
+      border-radius: $radius-pill;
+      color: $blue;
+      background: $orange;
+      box-shadow: $element-shadow;
+      cursor: pointer;
+      font-size: $font-size-button;
+      line-height: 1;
+      transition: transform $transition-fast, box-shadow $transition-fast;
+
+      &:hover {
+        transform: translateY(-0.18rem);
+        box-shadow: $element-shadow-hover;
+      }
+
+      &:focus-visible {
+        outline: 0.25rem solid $yellow;
+        outline-offset: 0.3rem;
+      }
+    }
+  }
+}
+
+@keyframes story-guide-enter {
+  from {
+    transform: translateX(100vw);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes story-cover-shrink {
+  to {
+    clip-path: circle(0 at 50% 50%);
+  }
+}
+
+@keyframes story-sun-spin-start {
+  to {
+    transform: rotate(34deg);
+  }
+}
+
+@keyframes story-sun-spin-loop {
+  from {
+    transform: rotate(34deg);
+  }
+
+  to {
+    transform: rotate(394deg);
+  }
+}
+
+@keyframes story-hatch-enter {
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes story-hatch-bob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  12.5% {
+    transform: translate3d(0, -1.4rem, 0);
+  }
+
+  25% {
+    transform: translate3d(0, -2rem, 0);
+  }
+
+  37.5% {
+    transform: translate3d(0, -1.4rem, 0);
+  }
+
+  50% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  62.5% {
+    transform: translate3d(0, 1.4rem, 0);
+  }
+
+  75% {
+    transform: translate3d(0, 2rem, 0);
+  }
+
+  87.5% {
+    transform: translate3d(0, 1.4rem, 0);
+  }
+}
+
+@keyframes story-hatch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes story-rain-fall {
+  from {
+    transform: translateY(-15vh);
+  }
+
+  to {
+    transform: translateY(135vh);
+  }
+}
+
+@media (max-width: 800px) {
+  .story {
+    --story-face-size: min(9.2vw, 6.2vh);
+
+    &__hatch {
+      left: 8%;
+      width: min(72vw, 58vh);
+      transform: translate3d(-95vw, 0, 0);
+    }
+
+    &__mr-leak {
+      right: 8%;
+      width: min(96vw, 80vh);
+      max-height: 98%;
+    }
+
+    &__rain img {
+      width: clamp(1.8rem, 9vw, 3.5rem);
+    }
+  }
+
+  .story-guide {
+    top: 4vh;
+    min-height: 92vh;
+    max-height: 92vh;
+    padding: 2.5rem 1.5rem;
+    overflow-y: auto;
+
+    > h1 {
+      margin-bottom: 2.5rem;
+      font-size: $font-size-page-title-mobile;
+    }
+
+    &__content {
+      gap: 2rem;
+    }
+
+    &__row {
+      display: block;
+
+      h2 {
+        margin-bottom: 0.75rem;
+        font-size: $font-size-section-title-mobile;
+      }
+
+      p,
+      > div {
+        padding-left: 1.9rem;
+      }
+
+      p {
+        font-size: $font-size-body-mobile;
+      }
+    }
+
+    &__legend {
+      padding-left: 0;
+      gap: 2rem;
+    }
+
+    &__controls {
+      padding-left: 1.9rem;
+      justify-content: flex-start;
+      gap: clamp(1rem, 8vw, 2.5rem);
+
+      figure {
+        min-width: 0;
+        gap: 0.5rem;
+      }
+
+      figcaption {
+        font-size: $font-size-body-mobile;
+      }
+    }
+
+    &__control-icon {
+      width: 2.8rem;
+      height: 2.8rem;
+      flex-basis: 2.8rem;
+    }
+
+    &__control-device {
+      width: 3.8rem;
+      grid-template-rows: 2.8rem 1.1rem;
+
+      figcaption {
+        height: 1.1rem;
+      }
+    }
+
+    &__control-description {
+      font-size: $font-size-body-mobile;
+      white-space: normal;
+    }
+
+    &__mouse-control {
+      width: 1.65rem;
+      height: 2.25rem;
+    }
+
+    &__touch-control {
+      width: 2.35rem;
+      height: 2.8rem;
+      font-size: 2.35rem;
+    }
+
+    &__actions {
+      position: static;
+      width: min(19rem, 100%);
+      margin: 2.5rem auto 0;
+      gap: 1rem;
+
+      button {
+        font-size: $font-size-button-mobile;
+      }
+    }
+  }
+}
