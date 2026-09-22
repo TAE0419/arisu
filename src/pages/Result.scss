@@ -140,31 +140,31 @@
       }
 
       p {
-        margin: 0 auto 1.2rem;
-        width: 70%;
+        margin: 0 auto 1.7rem;
+        width: 84%;
         font-size: 0.9rem;
       }
 
       dl {
         gap: 0.6rem;
-        font-size: 0.95rem;
+        font-size: 0.7rem;
         display: flex; flex-direction: column;
       }
     }
 
     &--success &__character {
       bottom: 8rem;
-      left: 45%;
-      width: min(130vw, 80rem);
+      left: 43%;
+      width: min(125vw, 75rem);
       max-height: 46vh;
       transform: translateX(-50%);
     }
 
     &--fail &__character {
       bottom: 11rem;
-      width: min(145vw, 90rem);
+      width: min(105vw, 22rem);
       max-height: 46vh;
-      left: 45%;
+      left: 50%;
       transform: translateX(-50%);
     }
 

@@ -7,20 +7,24 @@ import sunshineImage from '../assets/Etc/sunshine.png'
 import firstImage from '../assets/mr.leak/first.png'
 import secondImage from '../assets/mr.leak/second.png'
 import thirdImage from '../assets/mr.leak/third.png'
+import successBackground from '../assets/background/success.png'
+import failBackground from '../assets/background/fail.png'
+import successCharacter from '../assets/mr.leak/success.png'
+import failCharacter from '../assets/mr.leak/fail.png'
 
 const GAME_DURATION = 60_000
-const INITIAL_CONCENTRATION = 0
+const INITIAL_CONCENTRATION = 10
 
 const getStageSettings = (concentration) => {
   if (concentration >= 70) {
-    return { stage: 3, character: thirdImage, waterChance: 0.55, speed: 420, spawnEvery: 360, extraSunshine: 1, bonusSunshineChance: 0.35 }
+    return { stage: 3, character: thirdImage, waterChance: 0.55, speed: 420, spawnEvery: 360, extraSunshine: 1, bonusSunshineChance: 0.2 }
   }
 
   if (concentration >= 30) {
-    return { stage: 2, character: secondImage, waterChance: 0.65, speed: 290, spawnEvery: 520, extraSunshine: 1, bonusSunshineChance: 0 }
+    return { stage: 2, character: secondImage, waterChance: 0.65, speed: 290, spawnEvery: 520, extraSunshine: 0, bonusSunshineChance: 0.75 }
   }
 
-  return { stage: 1, character: firstImage, waterChance: 0.72, speed: 180, spawnEvery: 700, extraSunshine: 0, bonusSunshineChance: 0.50 }
+  return { stage: 1, character: firstImage, waterChance: 0.72, speed: 180, spawnEvery: 700, extraSunshine: 0, bonusSunshineChance: 0.35 }
 }
 
 const formatTime = (milliseconds) => {
@@ -34,8 +38,10 @@ const Game = () => {
   const navigate = useNavigate()
   const arenaRef = useRef(null)
   const playerRef = useRef(null)
+  const progressRef = useRef(null)
   const animationRef = useRef(0)
   const lastFrameRef = useRef(0)
+  const displayedSecondRef = useRef(Math.ceil(GAME_DURATION / 1000))
   const lastSpawnRef = useRef(0)
   const itemIdRef = useRef(0)
   const spawnQueueRef = useRef([])
@@ -45,29 +51,59 @@ const Game = () => {
   const concentrationRef = useRef(INITIAL_CONCENTRATION)
   const elapsedRef = useRef(0)
   const statusRef = useRef('playing')
+  const isQuitConfirmRef = useRef(false)
+  const pauseStartedAtRef = useRef(0)
+  const pausedDurationRef = useRef(0)
   const playerXRef = useRef(0.5)
+  const facingRightRef = useRef(false)
   const itemsRef = useRef([])
   const noticesRef = useRef([])
   const pendingNoticesRef = useRef([])
   const drainNoticeQueueRef = useRef(() => {})
   const noticeTimeoutsRef = useRef(new Set())
+  const resultAssetsReadyRef = useRef(Promise.resolve())
+  const resultImagesRef = useRef([])
 
   const [concentration, setConcentration] = useState(INITIAL_CONCENTRATION)
   const [remainingTime, setRemainingTime] = useState(GAME_DURATION)
   const [items, setItems] = useState([])
   const [notices, setNotices] = useState([])
-  const [playerX, setPlayerX] = useState(0.5)
   const [isFacingRight, setIsFacingRight] = useState(false)
-  const [status, setStatus] = useState('playing')
+  const [isQuitConfirmVisible, setIsQuitConfirmVisible] = useState(false)
 
   const settings = getStageSettings(concentration)
 
-  const finishGame = useCallback((result) => {
+  useEffect(() => {
+    const sources = [
+      successBackground,
+      failBackground,
+      successCharacter,
+      failCharacter,
+    ]
+    const images = sources.map((source) => {
+      const image = new Image()
+      image.decoding = 'async'
+      image.fetchPriority = 'high'
+      image.src = source
+      return image
+    })
+
+    resultImagesRef.current = images
+    resultAssetsReadyRef.current = Promise.allSettled(
+      images.map((image) => image.decode?.() ?? Promise.resolve()),
+    )
+
+    return () => {
+      resultImagesRef.current = []
+    }
+  }, [])
+
+  const finishGame = useCallback(async (result) => {
     if (statusRef.current !== 'playing') return
 
     statusRef.current = result
-    setStatus(result)
     cancelAnimationFrame(animationRef.current)
+    await resultAssetsReadyRef.current
     navigate('/result', {
       replace: true,
       state: {
@@ -179,10 +215,16 @@ const Game = () => {
     const runGame = (now) => {
       if (statusRef.current !== 'playing') return
 
+      if (isQuitConfirmRef.current) {
+        lastFrameRef.current = now
+        animationRef.current = requestAnimationFrame(runGame)
+        return
+      }
+
       const arena = arenaRef.current
       if (!arena) return
 
-      const elapsed = now - startedAt
+      const elapsed = now - startedAt - pausedDurationRef.current
       elapsedRef.current = Math.min(elapsed, GAME_DURATION)
       const remaining = Math.max(0, GAME_DURATION - elapsed)
       const deltaSeconds = Math.min((now - lastFrameRef.current) / 1000, 0.05)
@@ -192,7 +234,15 @@ const Game = () => {
       const playerBounds = playerRef.current?.getBoundingClientRect()
 
       lastFrameRef.current = now
-      setRemainingTime(remaining)
+
+      const displayedSecond = Math.ceil(remaining / 1000)
+      if (displayedSecond !== displayedSecondRef.current) {
+        displayedSecondRef.current = displayedSecond
+        setRemainingTime(remaining)
+      }
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${elapsedRef.current / GAME_DURATION})`
+      }
 
       if (remaining <= 0) {
         finishGame(concentrationRef.current >= 100 ? 'success' : 'failure')
@@ -305,15 +355,23 @@ const Game = () => {
   }, [finishGame, updateConcentration])
 
   const movePlayer = (clientX) => {
-    if (statusRef.current !== 'playing' || !arenaRef.current) return
+    if (
+      statusRef.current !== 'playing'
+      || isQuitConfirmRef.current
+      || !arenaRef.current
+    ) return
 
     const bounds = arenaRef.current.getBoundingClientRect()
     const nextX = Math.min(0.94, Math.max(0.06, (clientX - bounds.left) / bounds.width))
     if (nextX !== playerXRef.current) {
-      setIsFacingRight(nextX > playerXRef.current)
+      const nextFacingRight = nextX > playerXRef.current
+      if (nextFacingRight !== facingRightRef.current) {
+        facingRightRef.current = nextFacingRight
+        setIsFacingRight(nextFacingRight)
+      }
     }
     playerXRef.current = nextX
-    setPlayerX(nextX)
+    playerRef.current.style.left = `${nextX * 100}%`
   }
 
   const handlePointerMove = (event) => movePlayer(event.clientX)
@@ -329,13 +387,24 @@ const Game = () => {
     if (touch) movePlayer(touch.clientX)
   }
 
-  const restartGame = () => window.location.reload()
-  const elapsedPercent = ((GAME_DURATION - remainingTime) / GAME_DURATION) * 100
+  const openQuitConfirm = () => {
+    if (isQuitConfirmRef.current) return
+    isQuitConfirmRef.current = true
+    pauseStartedAtRef.current = performance.now()
+    setIsQuitConfirmVisible(true)
+  }
+
+  const closeQuitConfirm = () => {
+    pausedDurationRef.current += performance.now() - pauseStartedAtRef.current
+    pauseStartedAtRef.current = 0
+    isQuitConfirmRef.current = false
+    setIsQuitConfirmVisible(false)
+  }
 
   return (
     <main
       ref={arenaRef}
-      className="game-page"
+      className={`game-page${isQuitConfirmVisible ? ' game-page--confirming-quit' : ''}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onTouchStart={handleTouchMove}
@@ -344,7 +413,7 @@ const Game = () => {
       <header className="game-hud">
         <div className="game-hud__time-row">
           <div className="game-hud__track" aria-label="경과 시간">
-            <span style={{ width: `${elapsedPercent}%` }} />
+            <span ref={progressRef} />
           </div>
           <time>{formatTime(remainingTime)}</time>
         </div>
@@ -359,7 +428,7 @@ const Game = () => {
           <div
             key={item.id}
             className={`game-item game-item--${item.type}`}
-            style={{ left: `${item.x * 100}%`, transform: `translate(-50%, ${item.y}px)` }}
+            style={{ left: `${item.x * 100}%`, transform: `translate3d(-50%, ${item.y}px, 0)` }}
           >
             <img src={item.type === 'water' ? arisuImage : sunshineImage} alt="" />
             {item.info && (
@@ -390,31 +459,50 @@ const Game = () => {
 
       <div className="game-floor" aria-hidden="true" />
 
+      <button
+        className="game-quit"
+        type="button"
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerMove={(event) => event.stopPropagation()}
+        onTouchStart={(event) => event.stopPropagation()}
+        onTouchMove={(event) => event.stopPropagation()}
+        onClick={openQuitConfirm}
+      >
+        그만두기 →
+      </button>
+
+      {isQuitConfirmVisible && (
+        <section
+          className="game-quit-confirm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="game-quit-confirm-title"
+          onPointerDown={(event) => event.stopPropagation()}
+          onPointerMove={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onTouchMove={(event) => event.stopPropagation()}
+        >
+          <p id="game-quit-confirm-title">정말 게임을 그만두시겠어요?</p>
+          <div>
+            <button type="button" className="game-quit-confirm__yes" onClick={() => navigate('/')}>
+              예
+            </button>
+            <button type="button" className="game-quit-confirm__no" onClick={closeQuitConfirm}>
+              아니오
+            </button>
+          </div>
+        </section>
+      )}
+
       <div
         ref={playerRef}
         className={`game-player${isFacingRight ? ' game-player--right' : ''}`}
-        style={{ left: `${playerX * 100}%` }}
+        style={{ left: '50%' }}
         aria-label={`${settings.stage}단계 미스터 리크`}
       >
         <img src={settings.character} alt="미스터 리크" />
       </div>
 
-      {status !== 'playing' && (
-        <section className="game-result" role="dialog" aria-modal="true">
-          <h1>{status === 'success' ? '성공!' : '실패'}</h1>
-          <p>
-            {status === 'success'
-              ? '아리수 농도 100%를 달성했어요!'
-              : concentration < 0
-                ? '아리수 농도가 0% 아래로 떨어졌어요.'
-                : '제한 시간 안에 아리수 농도 100%를 달성하지 못했어요.'}
-          </p>
-          <div>
-            <button type="button" onClick={restartGame}>다시 하기</button>
-            <button type="button" onClick={() => navigate('/')}>홈으로</button>
-          </div>
-        </section>
-      )}
     </main>
   )
 }
