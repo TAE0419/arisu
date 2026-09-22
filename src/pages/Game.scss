@@ -256,7 +256,7 @@
     border: 0;
     background: transparent;
     cursor: pointer;
-    font-size: clamp(1.2rem, 1.8vw, 1.6rem);
+    font-size: clamp(1.2rem, 1.5vw, 1.5rem);
 
     &:focus-visible {
       outline: 0.18rem solid currentColor;
@@ -356,7 +356,7 @@
 
     > span {
       font-size: 0.40rem;
-      line-height: 1.15;
+      line-height: 1.05;
     }
   }
 
@@ -384,6 +384,10 @@
   .game-player {
     bottom: 8%;
     width: clamp(8rem, 31vw, 11.5rem);
+  }
+
+  .game-quit-confirm p {
+    font-size: 1.2rem;
   }
 
 }

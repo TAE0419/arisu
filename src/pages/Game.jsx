@@ -279,7 +279,7 @@ const Game = () => {
             if (item.type === 'water') {
               updateConcentration(5, item.info)
             } else {
-              updateConcentration(-10)
+              updateConcentration(-5)
             }
             return false
           }

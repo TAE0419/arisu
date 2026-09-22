@@ -520,14 +520,13 @@
   }
 
   .story-guide {
-    top: 0;
-    width: 100vw;
-    min-height: 100vh;
-    min-height: 100svh;
-    max-height: 100vh;
-    max-height: 100svh;
+    width: auto;
+    min-height: 0;
+    max-height: none;
+    inset: 0;
     padding: 2.5rem 1.5rem;
     overflow-y: auto;
+    overscroll-behavior: contain;
 
     > h1 {
       margin-bottom: 2.5rem;
