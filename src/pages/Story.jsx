@@ -283,8 +283,8 @@ const Story = () => {
           </div>
 
           <div className="story-guide__actions">
-            <button type="button" onClick={() => navigate('/')}>돌아가기</button>
             <button type="button" onClick={() => navigate('/game')}>게임 시작</button>
+            <button type="button" onClick={() => navigate('/')}>돌아가기</button>
           </div>
         </section>
       )}

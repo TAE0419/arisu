@@ -140,8 +140,8 @@
       }
 
       p {
-        margin: 0 auto 1.7rem;
-        width: 84%;
+        margin: 0 auto 3rem;
+        width: 85%;
         font-size: 0.9rem;
       }
 
@@ -161,7 +161,7 @@
     }
 
     &--fail &__character {
-      bottom: 12.5rem;
+      bottom: 12rem;
       width: min(105vw, 20rem);
       max-height: 46vh;
       left: 50%;
