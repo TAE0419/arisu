@@ -84,6 +84,10 @@
     // transform: translateX(-50%);
   }
 
+  &__mobile-break {
+    display: none;
+  }
+
   &--success &__character {
     bottom: 0%;
     left: 20%;
@@ -130,6 +134,10 @@
 
 @media (max-width: 800px) {
   .result-page {
+    &__mobile-break {
+      display: initial;
+    }
+
     &__summary {
       top: 8vh;
       width: 92vw;
@@ -141,7 +149,7 @@
 
       p {
         margin: 0 auto 3rem;
-        width: 85%;
+        width: 90%;
         font-size: 0.9rem;
       }
 
