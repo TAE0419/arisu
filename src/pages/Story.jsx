@@ -109,7 +109,7 @@ const Story = () => {
       await wait(1100, signal)
       if (signal.aborted) return
 
-      await animateScroll(viewport, bottom, 1500, signal)
+      await animateScroll(viewport, bottom, 3000, signal)
       if (signal.aborted) return
 
       setIsSurprised(true)

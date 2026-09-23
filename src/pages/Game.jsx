@@ -17,14 +17,14 @@ const INITIAL_CONCENTRATION = 10
 
 const getStageSettings = (concentration) => {
   if (concentration >= 70) {
-    return { stage: 3, character: thirdImage, waterChance: 0.55, speed: 420, spawnEvery: 360, extraSunshine: 1, bonusSunshineChance: 0.2 }
+    return { stage: 3, character: thirdImage, waterChance: 0.55, speed: 420, spawnEvery: 360, extraSunshine: 1, bonusSunshineChance: 0.1 }
   }
 
   if (concentration >= 30) {
-    return { stage: 2, character: secondImage, waterChance: 0.65, speed: 290, spawnEvery: 520, extraSunshine: 0, bonusSunshineChance: 0.75 }
+    return { stage: 2, character: secondImage, waterChance: 0.65, speed: 290, spawnEvery: 520, extraSunshine: 0, bonusSunshineChance: 0.5 }
   }
 
-  return { stage: 1, character: firstImage, waterChance: 0.72, speed: 180, spawnEvery: 700, extraSunshine: 0, bonusSunshineChance: 0.35 }
+  return { stage: 1, character: firstImage, waterChance: 0.72, speed: 180, spawnEvery: 700, extraSunshine: 0, bonusSunshineChance: 0.2 }
 }
 
 const formatTime = (milliseconds) => {
