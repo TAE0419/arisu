@@ -31,8 +31,7 @@ const MakeInfo = () => {
             <p>
               ‘아리수를 마셔야되는 이유’는 2026 아리수 서포터즈 활동의
               일환으로, 서울시의 수돗물 아리수를 친근하고 재미있는 방식으로
-              알리기 위해 기획되었습니다.<br />
-              게임을 플레이하며 일상 속 아리수의 매력을 재발견해 보세요!
+              알리기 위해 기획되었습니다. 게임을 플레이하며 일상 속 아리수의 매력을 재발견해 보세요!
             </p>
           </div>
 
@@ -47,11 +46,10 @@ const MakeInfo = () => {
           </div>
 
           <div className="make-info-page__row">
-            <h2>제작자</h2>
+            <h2>기타 정보</h2>
             <div>
               <p>문의 : ktcat0419@gmail.com</p>
-              <p>GitHub : <a href="https://github.com/your-username" target="_blank" rel="noreferrer">github.com/your-username</a></p>
-              <p>개인 포트폴리오 : 배포예정</p>
+              <p>배포 링크 : <a href="https://arisu-eta.vercel.app/" target="_blank" rel="noreferrer">https://arisu-eta.vercel.app/</a></p>
               <p>Copyright: © 2026 Arisu Supporters. All rights reserved.</p>
             </div>
           </div>
